@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/root27/slacknotifyMQ/controllers"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var (
@@ -64,6 +67,16 @@ func main() {
 		SlackToken:   slackToken,
 		SlackChannel: slackChannel,
 	}
+
+	stopChan := make(chan os.Signal, 1)
+
+	signal.Notify(stopChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-stopChan
+		fmt.Println(color.RedString("Notifier Stopped"))
+		os.Exit(0)
+	}()
 
 	s.HandleRabbit()
 
